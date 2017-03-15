@@ -144,4 +144,86 @@ class UserControllerTest extends \PHPUnit_Framework_TestCase
         
         $userController->signupSubmitAction($params);
     }
+    
+    public function testVerifyAction()
+    {
+        $userController = $this->newUserController();
+        
+        $params = [
+            'email' => 'a@b.com',
+            'verifyCode' => 'deadbeef01234',
+        ];
+        
+        $this->mocks[HeaderParams::class]->expects($this->once())
+                ->method('redirect')
+                ->with('user/account');
+        
+        $mockUser = $this->getMockBuilder(User::class)
+                ->disableOriginalConstructor()
+                ->getMock();
+        
+        $mockUser->expects($this->any())
+                ->method('__get')
+                ->willReturnCallback(function ($property) {
+                    if ($property == 'verifyCode') {
+                        return 'deadbeef01234';
+                    }
+                });
+                
+        $mockUser->expects($this->at(1))
+                ->method('__isset')
+                ->with('verifyCode')
+                ->willReturn(true);
+        
+        $this->mocks[Di::class]->expects($this->any())
+                ->method('create')
+                ->with(User::class)
+                ->willReturn($mockUser);
+        
+        $this->mocks[Validator::class]->method('isValidEmailString')
+                ->willReturn(true);
+        
+        $this->mocks[Validator::class]->method('isValidVerifyCodeString')
+                ->willReturn(true);
+        
+        $this->mocks[Users::class]->method('emailExists')
+                ->willReturn(true);
+        
+        $this->mocks[Users::class]->expects($this->once())
+                ->method('saveUser');
+        
+        $userController->verifyAction($params);
+    }
+    
+    public function testResendVerificationAction()
+    {
+        $userController = $this->newUserController();
+        
+        $this->mocks[Session::class]->method('get')
+                ->with('userId')
+                ->willReturn(1);
+        
+        $mockUser = $this->getMockBuilder(User::class)
+                ->disableOriginalConstructor()
+                ->getMock();
+        
+        $mockUser->expects($this->at(1))
+                ->method('__get')
+                ->with('id')
+                ->willReturn(1);
+        
+        $this->mocks[Di::class]->expects($this->any())
+                ->method('create')
+                ->with(User::class)
+                ->willReturn($mockUser);
+        
+        
+        $this->mocks[HeaderParams::class]->expects($this->once())
+                ->method('redirect')
+                ->with('');
+        
+        $params = [];
+        $userController->resendVerificationAction($params);
+        
+    }
 }

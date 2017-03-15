@@ -215,6 +215,11 @@ class UserController extends ViewController
         $user = $this->createUserObject();
         $user->id = $this->session->get('userId');
         
+        if (is_null($user->id)) {
+            $this->headers->redirect('user/login');
+            return;
+        }
+        
         $this->users->loadUser($user);
         
         // Send confirmation email
