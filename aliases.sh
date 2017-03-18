@@ -8,3 +8,5 @@ alias sync-master="git fetch upstream && git checkout master && git merge upstre
 alias pcf='vendor/bin/php-cs-fixer'
 alias cs-fix='pcf fix app && pcf fix tests && pcf fix public'
 alias updb='php tools/upgrade-db.php'
+alias my='php tools/generate-mysql-opts-file.php && mysql --defaults-file=./mysql-opts && rm -f ./mysql-opts'
+alias pd='vendor/bin/phpdoc -d app -d tests'

@@ -39,7 +39,7 @@ class User
         
         $verifyLink = $this->config->get('baseUrl')
                 . '/user/verify?verifyCode=' . $this->verifyCode
-                . '&email=' . $this->email;
+                . '&email=' . urlencode($this->email);
         
         $emailParams = [
             'email' => $this->email,

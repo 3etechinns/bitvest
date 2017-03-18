@@ -14,6 +14,7 @@ class Mysql
     private $user;
     private $pass;
     private $name;
+    private $optsFile;
     
     public function __construct(Config $config)
     {
@@ -21,6 +22,7 @@ class Mysql
         $this->user = $config->get('dbUser');
         $this->pass = $config->get('dbPass');
         $this->name = $config->get('dbName');
+        $this->optsFile = __DIR__ . "/../../mysql-opts";
     }
 
     private function getMysqli()
@@ -79,10 +81,36 @@ class Mysql
     
     public function upgradeDb()
     {
-        while ($this->upgradeCurrentHash());
+        try {
+            $this->generateMysqlOptsFile();
+            while ($this->upgradeCurrentHash());
+        } finally {
+            unlink($this->optsFile);
+        }
         echo "--------------------------------------\n";
         echo "All done! Database upgrade successful.\n";
         echo "--------------------------------------\n";
+    }
+    
+    public function generateMysqlOptsFile()
+    {
+        if (file_exists($this->optsFile)) {
+            unlink($this->optsFile);
+        }
+        
+        file_put_contents($this->optsFile, "");
+        
+        $this->run("chmod 600 {$this->optsFile}");
+        
+        $opts = [
+            "[client]",
+            "user=\"{$this->user}\"",
+            "password=\"{$this->pass}\"",
+            "database=\"{$this->name}\"",
+            "host=\"{$this->host}\"",
+        ];
+        
+        file_put_contents($this->optsFile, implode(PHP_EOL, $opts));    
     }
     
     private function upgradeCurrentHash()
@@ -90,14 +118,14 @@ class Mysql
         $hash = $this->getDbHash();
         echo "Current DB hash is $hash\n";
         
-        $mysqlParams = "-u {$this->user} -p{$this->pass} -h{$this->host} {$this->name}";
+        $mysqlParams = "--defaults-file={$this->optsFile}";
         
         $upgradeFile = __DIR__ . "/../../sql/upgrade/$hash.sql";
         
-        echo "Looking for $upgradeFile... ";
+        echo "Looking for " . basename($upgradeFile) . "... ";
         
         if (file_exists($upgradeFile)) {
-            echo "Found.\n";
+            echo "Upgrade found.\n";
             echo "Creating DB backup.\n";
             $backupFile = __DIR__ . "/../../sql/backups/backup-" . date("Y-m-d-H-i-s") . ".sql";
             $dumpParams = "--single-transaction --routines --triggers --events";
@@ -123,7 +151,7 @@ class Mysql
             
             return true;
         } else {
-            echo "Not found\n";
+            echo "No changes\n";
         }
         
         return false;

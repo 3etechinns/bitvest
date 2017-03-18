@@ -5,7 +5,9 @@ vendor
 public/.htaccess
 coverage
 public/coverage
+public/docs
 clover.xml
 .php_cs.cache
 /nbproject
 sql/backups/*.sql.gz
+output
