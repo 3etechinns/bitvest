@@ -110,7 +110,7 @@ class Mysql
             "host=\"{$this->host}\"",
         ];
         
-        file_put_contents($this->optsFile, implode(PHP_EOL, $opts));    
+        file_put_contents($this->optsFile, implode(PHP_EOL, $opts));
     }
     
     private function upgradeCurrentHash()

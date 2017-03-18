@@ -11,8 +11,9 @@ Run `source aliases.sh` to import them.
 * `cov-check` verifies code coverage percentage (after running `pc`)
 * `cs-fix` fixes the syntax of all php files
 * `updb` upgrades your db to the latest schema version
-* `my` runs mysql with the current app config parameters
+* `my` starts a command-line mysql client with the current app config parameters
 * `pd` generates php documentation into the `output/` folder
+* `it` runs a small set of integration tests
 
 ## Database upgrades
 

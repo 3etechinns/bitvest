@@ -224,6 +224,5 @@ class UserControllerTest extends \PHPUnit_Framework_TestCase
         
         $params = [];
         $userController->resendVerificationAction($params);
-        
     }
 }
