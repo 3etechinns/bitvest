@@ -11,3 +11,6 @@ clover.xml
 /nbproject
 sql/backups/*.sql.gz
 output
+humbuglog.txt
+cookies.txt
+out.html
