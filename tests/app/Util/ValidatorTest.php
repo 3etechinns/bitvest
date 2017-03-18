@@ -8,12 +8,14 @@ class ValidatorTest extends \PHPUnit_Framework_TestCase
         $validator = new Validator();
         
         $this->assertTrue($validator->isEmailChars('foo@bar.com'));
+        $this->assertTrue($validator->isEmailChars('foo+1@bar.com'));
         $this->assertFalse($validator->isEmailChars('foo@bar.com!@#'));
         
         $this->assertTrue($validator->isPasswordChars('g00dp@ssw0rd!'));
         $this->assertFalse($validator->isPasswordChars('no spaces'));
         
         $this->assertTrue($validator->isValidEmailString('foo@bar.com'));
+        $this->assertTrue($validator->isValidEmailString('foo+1@bar.com'));
         $this->assertFalse($validator->isValidEmailString('wei%%%n.com@x'));
         
         $this->assertTrue($validator->isValidPasswordString('g00dp@ssw0rd!'));
