@@ -20,11 +20,6 @@ trait WithMockHelper
         }
     }
     
-    protected function getMock($class)
-    {
-        return $this->mocks[$class];
-    }
-    
     /**
      * Set expectations based on mock configuration array.
      * 
