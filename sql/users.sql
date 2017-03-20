@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `email` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
   `verifyCode` varchar(255) DEFAULT NULL,
+  `passwordResetCode` varchar(255) DEFAULT NULL,
   `btcPublicKey` varchar(255) DEFAULT NULL,
   `btcPrivateKey` varchar(255) DEFAULT NULL,
   `createdTs` datetime NOT NULL,

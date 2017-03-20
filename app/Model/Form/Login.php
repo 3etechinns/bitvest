@@ -2,10 +2,14 @@
 
 namespace App\Model\Form;
 
-use App\Util\Validator;
 use App\Model\Auth;
 use App\Util\Session;
+use App\Util\Validator;
 
+/**
+ * @property string $email
+ * @property string $password
+ */
 class Login extends AbstractForm
 {
     private $validator;
@@ -14,14 +18,14 @@ class Login extends AbstractForm
     
     public function __construct(Validator $validator, Session $session, Auth $auth)
     {
-        parent::__construct(['email', 'password']);
+        $this->defineFields(['email', 'password']);
         $this->validator = $validator;
         $this->session = $session;
         $this->auth = $auth;
     }
     
     /**
-     * Validates the parameters. If the validation passes, the class values
+     * Validates the parameters. If the validation passes, the form properties
      * will be updated to what was submitted.
      *
      * @param array $params
@@ -29,21 +33,16 @@ class Login extends AbstractForm
      */
     public function validate(array $params)
     {
-        if (isset($params['email']) && isset($params['password'])) {
-            $this->hasErrors = false;
-            
-            $validEmailChars = $this->validator->isEmailChars($params['email']);
-            $validPasswordChars = $this->validator->isPasswordChars($params['password']);
-            $correctPassword = $this->auth->checkPassword($params['email'], $params['password']);
+        parent::validate($params);
         
-            if (!$validEmailChars || !$validPasswordChars || !$correctPassword) {
-                $this->errors['email'] = 'Incorrect email/password.';
-                $this->hasErrors = true;
-            }
-            
-            $this->values['email'] = $params['email'];
-        } else {
-            throw new \Exception('Missing form parameters.');
+        $validInput = $this->validator->isEmailChars($params['email'])
+                && $this->validator->isPasswordChars($params['password'])
+                && $this->auth->checkPassword($params['email'], $params['password']);
+
+        if (!$validInput) {
+            $this->setError('email', 'Incorrect email/password.');
         }
+
+        $this->email = $params['email'];
     }
 }

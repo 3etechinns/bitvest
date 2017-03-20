@@ -1,41 +1,37 @@
 <?php
 namespace App\Model\Form;
 
+use App\Model\WithProperties;
+use App\Util\Std;
+
+/**
+ * @codeCoverageIgnore
+ */
 abstract class AbstractForm
 {
+    use WithProperties;
+    
     private $fields;
-    
-    protected $hasErrors;
-    protected $errors;
-    protected $values;
-    
-    public function __construct(array $fields)
-    {
-        $this->hasErrors = false;
-        
-        $this->fields = $fields;
-        
-        // Initialize to an array with empty string (no error) for each field.
-        $this->errors = array_combine($fields,
-                array_fill(0, count($fields), ''));
-        
-        $this->values = $this->errors;
-    }
+    private $hasErrors;
+    private $errors;
     
     public function getState()
     {
         return [
             'hasErrors' => $this->hasErrors,
             'formErrors' => $this->errors,
-            'formValues' => $this->values,
+            'formValues' => $this->toArray(),
         ];
     }
     
-    protected function setValues(array $fields)
+    public function setError($field, $message)
     {
-        foreach ($fields as $field => $value) {
-            $this->values[$field] = $value;
+        if (!in_array($field, $this->getPropertyNames())) {
+            throw new \Exception("No such field $field in " . get_class($this));
         }
+        
+        $this->errors[$field] = $message;
+        $this->hasErrors = true;
     }
     
     public function hasErrors()
@@ -43,8 +39,53 @@ abstract class AbstractForm
         return $this->hasErrors;
     }
     
-    public function getValue($field)
+    public function getErrors()
     {
-        return $this->values[$field];
+        return $this->errors;
+    }
+    
+    public function getError($field)
+    {
+        if (!in_array($field, $this->getPropertyNames())) {
+            throw new \Exception("No such field $field in " . get_class($this));
+        }
+        
+        return $this->errors[$field];
+    }
+    
+    /**
+     * Calls defineProperties(), along with initializing the errors array.
+     *
+     * @param array $fields
+     */
+    protected function defineFields(array $fields)
+    {
+        $this->hasErrors = false;
+        $this->fields = $fields;
+        
+        // Initialize to an array with empty string (no error) for each field.
+        $init = array_fill_keys($fields, '');
+        $this->errors = $init;
+        $this->defineProperties($fields);
+        $this->init($init);
+    }
+    
+    /**
+     * Ensure all fields are submitted. More specific validation should be
+     * defined in subclassed public validate() method.
+     *
+     * @param array $params
+     * @throws \Exception
+     */
+    protected function validate(array $params)
+    {
+        if (!$this->hasAllFields($params)) {
+            throw new \Exception('Missing form parameters.');
+        }
+    }
+    
+    protected function hasAllFields(array $params)
+    {
+        return Std::arrayKeysExist($this->fields, $params);
     }
 }

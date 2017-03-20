@@ -2,9 +2,9 @@
 
 namespace App\Model;
 
-use App\Util\Mysql;
-use App\Util\Email;
 use App\Util\Config;
+use App\Util\Email;
+use App\Util\Mysql;
 
 class Users
 {
@@ -74,7 +74,7 @@ class Users
             $params = [$user->id];
         }
         
-        $query = "select id, email, verifyCode from users where $where limit 1";
+        $query = "select id, email, verifyCode, passwordResetCode from users where $where limit 1";
         
         $rows = $this->mysql->query($query, $types, $params);
         
@@ -82,9 +82,7 @@ class Users
             throw new \Exception('Unable to find user.');
         }
         
-        $user->id = $rows[0]['id'];
-        $user->email = $rows[0]['email'];
-        $user->verifyCode = $rows[0]['verifyCode'];
+        $user->init($rows[0]);
     }
     
     public function saveUser(User $user)
@@ -95,13 +93,18 @@ class Users
         
         $set = [];
         $params = [];
-        $typesMap = ['email' => 's', 'verifyCode' => 's', 'password' => 's'];
+        $typesMap = ['email' => 's', 'verifyCode' => 's', 'password' => 's', 'passwordResetCode' => 's'];
         $types = [];
         
         foreach ($user->getModifiedProperties() as $property) {
             $set[] = "$property = ?";
-            $params[] = $user->$property;
             $types[] = $typesMap[$property];
+            
+            if ($property == 'password') {
+                $params[] = password_hash($user->password, PASSWORD_BCRYPT);
+            } else {
+                $params[] = $user->$property;
+            }
         }
         
         if (empty($set)) {

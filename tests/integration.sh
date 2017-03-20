@@ -24,6 +24,8 @@ cleanup() { rm -f out.html; rm cookies.txt; }
 # Test cases
 # -------------------------------------------------
 
+rand=$RANDOM$RANDOM
+
 homepage() 
 {
     browse "$URL/";
@@ -32,24 +34,23 @@ homepage()
     check 'login'
 }
 
-login()
-{
-    browse "$URL/user/login";
-    check 'button'
-    check 'login-submit'
-
-    post "$URL/user/login-submit" "email=a@b.com&password=pass123";
-    check 'needs verification'
-}
-
-signup()
+signupAndLogin()
 {
     browse "$URL/user/signup"
     check 'button'
 
-    rand=$RANDOM$RANDOM
     post "$URL/user/signup-submit" "email=a%2B$rand@b.com&password=pass123";
     check 'Confirmation email has been sent. Please check your email to login.'
+
+    browse "$URL/user/login";
+    check 'button'
+    check 'login-submit'
+
+    post "$URL/user/login-submit" "email=a%2B$rand@b.com&password=pass123";
+    check 'needs verification'
+
+    post "$URL/user/login-submit" "email=a@b.com&password=pass123";
+    check 'logged in as'
 }
 
 biz()
@@ -60,8 +61,7 @@ biz()
 
 #set -x
 homepage
-login
-signup
+signupAndLogin
 biz
 cleanup
 

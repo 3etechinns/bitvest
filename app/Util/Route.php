@@ -2,8 +2,8 @@
 
 namespace App\Util;
 
-use App\Util\HeaderParams;
 use App\Util\Di;
+use App\Util\HeaderParams;
 
 class Route
 {

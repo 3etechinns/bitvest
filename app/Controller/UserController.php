@@ -2,18 +2,20 @@
 
 namespace App\Controller;
 
-use App\Util\Config;
-use App\Util\View;
-use App\Util\Session;
-use App\Util\HeaderParams;
 use App\Model\Auth;
+use App\Model\Form\ForgotPassword;
 use App\Model\Form\Login;
-use App\Model\Menu;
+use App\Model\Form\ResetPassword;
 use App\Model\Form\Signup;
-use App\Model\Users;
+use App\Model\Menu;
 use App\Model\User;
+use App\Model\Users;
+use App\Util\Config;
 use App\Util\Di;
+use App\Util\HeaderParams;
+use App\Util\Session;
 use App\Util\Validator;
+use App\Util\View;
 
 class UserController extends ViewController
 {
@@ -22,14 +24,17 @@ class UserController extends ViewController
     private $auth;
     private $loginForm;
     private $signupForm;
+    private $forgotPasswordForm;
     private $validator;
     private $users;
     private $di;
+    private $resetPasswordForm;
     
     public function __construct(Config $config,
             View $view, Menu $menu, Session $session,
             HeaderParams $headers, Auth $auth, Login $loginForm, Signup $signupForm,
-            Users $users, Validator $validator, Di $di)
+            Users $users, Validator $validator, Di $di, ForgotPassword $forgotPasswordForm,
+            ResetPassword $resetPasswordForm)
     {
         parent::__construct($config, $view, $menu);
         $this->session = $session;
@@ -40,6 +45,8 @@ class UserController extends ViewController
         $this->users = $users;
         $this->validator = $validator;
         $this->di = $di;
+        $this->forgotPasswordForm = $forgotPasswordForm;
+        $this->resetPasswordForm = $resetPasswordForm;
     }
 
     public function loginAction(array $unfilteredRequestParams)
@@ -72,7 +79,7 @@ class UserController extends ViewController
             return;
         }
        
-        $this->successfulLogin($this->loginForm->getValue('email'));
+        $this->successfulLogin($this->loginForm->email);
     }
     
     public function signupAction(array $unfilteredRequestParams)
@@ -101,8 +108,8 @@ class UserController extends ViewController
         }
         
         $user = $this->createUserObject();
-        $user->email = $this->signupForm->getValue('email');
-        $user->password = $this->signupForm->getValue('password');
+        $user->email = $this->signupForm->email;
+        $user->password = $this->signupForm->password;
         
         // Add user to database
         $this->users->add($user);
@@ -178,32 +185,6 @@ class UserController extends ViewController
         $this->successfulLogin($p['email']);
     }
     
-    private function successfulLogin($email)
-    {
-        $user = $this->createUserObject();
-        $user->email = $email;
-        $this->users->loadUser($user);
-        
-        if (isset($user->verifyCode)) {
-            $this->headers->redirect('user/needs-verification');
-            $this->session->set('userId', $user->id);
-            return;
-        }
-        
-        $this->session->set('message', 'Successfully logged in as ' . $email);
-        $this->session->set('loggedIn', true);
-        $this->session->set('userId', $user->id);
-        
-        $returnUrl = $this->session->getOnce('returnUrl');
-        
-        if (isset($returnUrl)) {
-            $this->headers->redirect($returnUrl);
-            return;
-        }
-        
-        $this->headers->redirect('user/account');
-    }
-    
     public function needsVerificationAction(array $p)
     {
         $this->view->addVars($p);
@@ -229,6 +210,152 @@ class UserController extends ViewController
                 'Confirmation email has been sent. Please check your email to login.');
         
         $this->headers->redirect('');
+    }
+    
+    public function forgotPasswordAction(array $p)
+    {
+        $this->view->addVars($p);
+        
+        $forgotPasswordFormState = $this->session->getOnce('forgotPasswordFormState');
+        
+        if (isset($forgotPasswordFormState)) {
+            $this->view->addVars($forgotPasswordFormState);
+        } else {
+            $this->view->addVars($this->forgotPasswordForm->getState());
+        }
+        
+        $this->view->render('user/forgot-password');
+    }
+    
+    public function forgotPasswordSubmitAction(array $p)
+    {
+        $this->forgotPasswordForm->validate($p);
+        
+        if ($this->forgotPasswordForm->hasErrors()) {
+            $this->session->set('forgotPasswordFormState', $this->forgotPasswordForm->getState());
+            $this->headers->redirect('user/forgot-password');
+            return;
+        }
+        
+        $user = $this->createUserObject();
+        $user->email = $this->forgotPasswordForm->email;
+        $this->users->loadUser($user);
+        
+        if (isset($user->verifyCode)) {
+            $this->session->set('userId', $user->id);
+            $this->headers->redirect('user/needs-verification');
+            return;
+        }
+        
+        // Generate a password reset link for the user and save it
+        $user->generatePasswordResetCode();
+        $this->users->saveUser($user);
+        
+        // Send a password reset link
+        $user->sendPasswordResetEmail();
+        
+        $this->session->set('message',
+                'Password reset link been sent. Please check your email.');
+        
+        $this->headers->redirect('');
+    }
+    
+    public function passwordResetVerifyAction(array $p)
+    {
+        $resetPasswordFormState = $this->session->getOnce('resetPasswordFormState');
+        
+        if (isset($resetPasswordFormState)) {
+            $p['email'] = $resetPasswordFormState['formValues']['email'];
+            $p['passwordResetCode'] = $resetPasswordFormState['formValues']['passwordResetCode'];
+        } else {
+            // From an email link, get from query parameters
+            if (!isset($p['email']) || !$this->validator->isValidEmailString($p['email']) ||
+                !isset($p['passwordResetCode']) || !$this->validator->isValidVerifyCodeString($p['passwordResetCode'])) {
+                throw new \Exception('Invalid input');
+            }
+        }
+        
+        if (!$this->users->emailExists($p['email'])) {
+            throw new \Exception('Invalid email specified');
+        }
+        
+        $user = $this->createUserObject();
+        $user->email = $p['email'];
+        $this->users->loadUser($user);
+        
+        if (!isset($user->passwordResetCode)) {
+            $this->session->set('message', 'Password reset link has expired. Please try again.');
+            $this->headers->redirect('user/login');
+        }
+        
+        // Code is correct, so render a password reset form, with hidden code
+        
+        if (isset($resetPasswordFormState)) {
+            $this->view->addVars($resetPasswordFormState);
+        } else {
+            $defaultState = $this->resetPasswordForm->getState();
+            $defaultState['formValues']['email'] = $p['email'];
+            $defaultState['formValues']['passwordResetCode'] = $p['passwordResetCode'];
+            $this->view->addVars($defaultState);
+        }
+        
+        $this->view->addVars($p);
+        $this->view->render('user/reset-password-form');
+    }
+    
+    
+    public function passwordResetSubmitAction(array $p)
+    {
+        $this->resetPasswordForm->validate($p);
+        
+        if ($this->resetPasswordForm->hasErrors()) {
+            if ($this->resetPasswordForm->getError('passwordResetCode') == 'Link expired') {
+                $this->session->set('message', 'Password reset link has expired. Please try again.');
+                $this->headers->redirect('user/login');
+                return;
+            }
+            
+            $this->session->set('resetPasswordFormState', $this->resetPasswordForm->getState());
+            $this->headers->redirect('user/password-reset-verify');
+            return;
+        }
+        
+        $user = $this->createUserObject();
+        $user->email = $this->resetPasswordForm->email;
+        $this->users->loadUser($user);
+        
+        // Clear the passwordResetCode, assign the new password for the user and save it
+        $user->passwordResetCode = null;
+        $user->password = $this->resetPasswordForm->password;
+        $this->users->saveUser($user);
+
+        $this->successfulLogin($p['email']);
+    }
+    
+    private function successfulLogin($email)
+    {
+        $user = $this->createUserObject();
+        $user->email = $email;
+        $this->users->loadUser($user);
+        
+        if (isset($user->verifyCode)) {
+            $this->headers->redirect('user/needs-verification');
+            $this->session->set('userId', $user->id);
+            return;
+        }
+        
+        $this->session->set('message', 'Successfully logged in as ' . $email);
+        $this->session->set('loggedIn', true);
+        $this->session->set('userId', $user->id);
+        
+        $returnUrl = $this->session->getOnce('returnUrl');
+        
+        if (isset($returnUrl)) {
+            $this->headers->redirect($returnUrl);
+            return;
+        }
+        
+        $this->headers->redirect('user/account');
     }
     
     /**

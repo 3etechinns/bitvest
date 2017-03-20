@@ -1,9 +1,9 @@
 <?php
 namespace App\Model\Form;
 
-use App\Util\Validator;
-use App\Util\Session;
 use App\Model\Users;
+use App\Util\Session;
+use App\Util\Validator;
 
 class SignupTest extends \PHPUnit_Framework_TestCase
 {
@@ -43,7 +43,7 @@ class SignupTest extends \PHPUnit_Framework_TestCase
         $form->validate($params);
         
         $this->assertFalse($form->hasErrors());
-        $this->assertEquals('foo@bar.com', $form->getValue('email'));
-        $this->assertEquals('somepass123', $form->getValue('password'));
+        $this->assertEquals('foo@bar.com', $form->email);
+        $this->assertEquals('somepass123', $form->password);
     }
 }

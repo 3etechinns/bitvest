@@ -1,9 +1,9 @@
 <?php
 namespace App\Model\Form;
 
-use App\Util\Validator;
-use App\Util\Session;
 use App\Model\Auth;
+use App\Util\Session;
+use App\Util\Validator;
 
 class LoginTest extends \PHPUnit_Framework_TestCase
 {
@@ -43,9 +43,9 @@ class LoginTest extends \PHPUnit_Framework_TestCase
         $form->validate($params);
         
         $this->assertFalse($form->hasErrors());
-        $this->assertEquals('foo@bar.com', $form->getValue('email'));
+        $this->assertEquals('foo@bar.com', $form->email);
         
         // The form does not set the password
-        $this->assertEquals('', $form->getValue('password'));
+        $this->assertEquals('', $form->password);
     }
 }

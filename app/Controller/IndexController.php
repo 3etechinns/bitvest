@@ -1,12 +1,12 @@
 <?php
 namespace App\Controller;
 
-use App\Util\View;
 use App\Controller\ViewController;
+use App\Model\Form\Login;
+use App\Model\Menu;
 use App\Util\Config;
 use App\Util\Session;
-use App\Model\Menu;
-use App\Model\Form\Login;
+use App\Util\View;
 
 class IndexController extends ViewController
 {

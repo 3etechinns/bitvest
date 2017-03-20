@@ -14,6 +14,7 @@ Run `source aliases.sh` to import them.
 * `my` starts a command-line mysql client with the current app config parameters
 * `pd` generates php documentation into the `output/` folder
 * `it` runs a small set of integration tests
+* `hb` runs humbug tests
 
 ## Database upgrades
 

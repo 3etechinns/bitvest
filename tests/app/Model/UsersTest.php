@@ -1,15 +1,15 @@
 <?php
 namespace App\Util;
 
-use PHPUnit_Framework_TestCase;
-use App\Util\Di;
-use App\Model\Users;
-use App\Util\Mysql;
 use App\Model\User;
+use App\Model\Users;
+use App\Util\Di;
+use App\Util\Mysql;
+use PHPUnit_Framework_TestCase;
 
 class UsersTest extends PHPUnit_Framework_TestCase
 {
-    use \Tests\WithMockHelper;
+    use \Test\WithMockHelper;
     
     /**
      * @group db

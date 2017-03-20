@@ -1,9 +1,9 @@
 <?php
 namespace App\Controller;
 
-use PHPUnit_Framework_TestCase;
-use App\Util\HeaderParams;
 use App\Util\Config;
+use App\Util\HeaderParams;
+use PHPUnit_Framework_TestCase;
 
 class ApiControllerTest extends PHPUnit_Framework_TestCase
 {

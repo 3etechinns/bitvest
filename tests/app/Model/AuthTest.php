@@ -1,8 +1,8 @@
 <?php
 namespace App\Util;
 
-use App\Util\Di;
 use App\Model\Auth;
+use App\Util\Di;
 
 class AuthTest extends \PHPUnit_Framework_TestCase
 {

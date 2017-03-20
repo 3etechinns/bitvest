@@ -1,61 +1,24 @@
 <?php
 namespace App\Controller;
 
-use App\Util\HeaderParams;
-use App\Util\Config;
-use App\Util\View;
-use App\Model\Menu;
-use App\Util\Session;
 use App\Model\Auth;
+use App\Model\Form\ForgotPassword;
 use App\Model\Form\Login;
+use App\Model\Form\ResetPassword;
 use App\Model\Form\Signup;
-use App\Model\Users;
+use App\Model\Menu;
 use App\Model\User;
-use App\Util\Validator;
+use App\Model\Users;
+use App\Util\Config;
 use App\Util\Di;
+use App\Util\HeaderParams;
+use App\Util\Session;
+use App\Util\Validator;
+use App\Util\View;
 
 class UserControllerTest extends \PHPUnit_Framework_TestCase
 {
-    use \Tests\WithMockHelper;
-    
-    private function newUserController()
-    {
-        $this->setupMocks([
-            Config::class,
-            View::class,
-            Menu::class,
-            Session::class,
-            HeaderParams::class,
-            Auth::class,
-            Login::class,
-            Signup::class,
-            Users::class,
-            Validator::class,
-            Di::class,
-        ]);
-        
-        $this->mocks[Config::class]->expects($this->any())
-                ->method('getConfig')
-                ->willReturn([]);
-        
-        $this->mocks[Di::class]->expects($this->any())
-                ->method('getInstance')
-                ->willReturn($this->mocks[Di::class]);
-        
-        return new UserController(
-            $this->mocks[Config::class],
-            $this->mocks[View::class],
-            $this->mocks[Menu::class],
-            $this->mocks[Session::class],
-            $this->mocks[HeaderParams::class],
-            $this->mocks[Auth::class],
-            $this->mocks[Login::class],
-            $this->mocks[Signup::class],
-            $this->mocks[Users::class],
-            $this->mocks[Validator::class],
-            $this->mocks[Di::class]
-        );
-    }
+    use \Test\WithMockHelper;
     
     public function testLoginAction()
     {
@@ -224,5 +187,48 @@ class UserControllerTest extends \PHPUnit_Framework_TestCase
         
         $params = [];
         $userController->resendVerificationAction($params);
+    }
+    
+    private function newUserController()
+    {
+        $this->setupMocks([
+            Config::class,
+            View::class,
+            Menu::class,
+            Session::class,
+            HeaderParams::class,
+            Auth::class,
+            Login::class,
+            Signup::class,
+            Users::class,
+            Validator::class,
+            Di::class,
+            ResetPassword::class,
+            ForgotPassword::class,
+        ]);
+        
+        $this->mocks[Config::class]->expects($this->any())
+                ->method('getConfig')
+                ->willReturn([]);
+        
+        $this->mocks[Di::class]->expects($this->any())
+                ->method('getInstance')
+                ->willReturn($this->mocks[Di::class]);
+        
+        return new UserController(
+            $this->mocks[Config::class],
+            $this->mocks[View::class],
+            $this->mocks[Menu::class],
+            $this->mocks[Session::class],
+            $this->mocks[HeaderParams::class],
+            $this->mocks[Auth::class],
+            $this->mocks[Login::class],
+            $this->mocks[Signup::class],
+            $this->mocks[Users::class],
+            $this->mocks[Validator::class],
+            $this->mocks[Di::class],
+            $this->mocks[ForgotPassword::class],
+            $this->mocks[ResetPassword::class]
+        );
     }
 }

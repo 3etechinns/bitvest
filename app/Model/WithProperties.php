@@ -8,18 +8,6 @@ trait WithProperties
     private $propertyNames;
     private $modified;
     
-    public function defineProperties(array $propertyNames)
-    {
-        $this->properties = [];
-        $this->modified = [];
-        $this->propertyNames = $propertyNames;
-        
-        foreach ($propertyNames as $propertyName) {
-            $this->properties[$propertyName] = null;
-            $this->modified[$propertyName] = false;
-        }
-    }
-    
     public function __get($property)
     {
         if (!in_array($property, $this->propertyNames)) {
@@ -35,14 +23,7 @@ trait WithProperties
         }
  
         if ($value !== $this->properties[$property]) {
-            
-            // If a value is being not being set for the first time,
-            // then we treat it as modified.
-            if ($this->modified[$property] == false &&
-                !is_null($this->properties[$property])) {
-                $this->modified[$property] = true;
-            }
-            
+            $this->modified[$property] = true;
             $this->properties[$property] = $value;
         }
     }
@@ -63,6 +44,22 @@ trait WithProperties
     public function __sleep()
     {
         return $this->__toString();
+    }
+    
+    public function getPropertyNames()
+    {
+        return $this->propertyNames;
+    }
+    
+    public function init(array $properties)
+    {
+        foreach ($properties as $property => $value) {
+            if (!in_array($property, $this->propertyNames)) {
+                throw new \Exception(get_class($this) . " does not have the property `$property`.");
+            }
+        
+            $this->properties[$property] = $value;
+        }
     }
     
     public function fromJsonString($json)
@@ -86,5 +83,22 @@ trait WithProperties
         }
         
         return $modified;
+    }
+    
+    public function toArray()
+    {
+        return $this->properties;
+    }
+    
+    protected function defineProperties(array $propertyNames)
+    {
+        $this->properties = [];
+        $this->modified = [];
+        $this->propertyNames = $propertyNames;
+        
+        foreach ($propertyNames as $propertyName) {
+            $this->properties[$propertyName] = null;
+            $this->modified[$propertyName] = false;
+        }
     }
 }

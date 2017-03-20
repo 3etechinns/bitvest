@@ -2,8 +2,8 @@
 
 namespace App\Controller;
 
-use App\Util\HeaderParams;
 use App\Util\Config;
+use App\Util\HeaderParams;
 
 class ApiController extends BaseController
 {

@@ -2,9 +2,9 @@
 
 namespace App\Controller;
 
-use App\Util\View;
-use App\Util\Config;
 use App\Model\Menu;
+use App\Util\Config;
+use App\Util\View;
 
 class MarketsController extends ViewController
 {

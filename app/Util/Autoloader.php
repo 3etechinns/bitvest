@@ -24,7 +24,7 @@ class Autoloader
         spl_autoload_register(function ($className) {
             $file = dirname(__FILE__) .
                     '/../../tests/' .
-                    str_replace(['Tests', '\\'], ['', '/'], $className)
+                    str_replace(['Test', '\\', 'App'], ['', '/', 'app'], $className)
                     . '.php';
             
             if (!is_readable($file)) {
