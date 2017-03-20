@@ -32,8 +32,11 @@ class Signup extends AbstractForm
 
         if (!$validEmail) {
             $this->setError('email', 'Email must be between ' . Validator::MIN_EMAIL_LENGTH .
-                    ' and ' . Validator::MAX_EMAIL_LENGTH . ' characters in' .
+                    ' and ' . Validator::MAX_EMAIL_LENGTH . ' characters' .
                     ' with an @ symbol.');
+            $emailExists = false;
+        } else {
+            $emailExists = $this->users->emailExists($params['email']);
         }
 
         $validPassword = $this->validator->isValidPasswordString($params['password']);
@@ -42,8 +45,6 @@ class Signup extends AbstractForm
             $this->setError('password', 'Password must be between ' . Validator::MIN_PASSWORD_LENGTH .
                     ' and ' . Validator::MAX_PASSWORD_LENGTH . ' characters.');
         }
-
-        $emailExists = $this->users->emailExists($params['email']);
 
         if ($emailExists) {
             $this->setError('email', 'An account already exists with that email address.');

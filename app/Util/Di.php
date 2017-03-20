@@ -1,6 +1,9 @@
 <?php
 namespace App\Util;
 
+/**
+ * @codeCoverageIgnore
+ */
 class Di
 {
     private static $objects = [];

@@ -4,6 +4,25 @@ namespace App\Util;
 
 class EmailTest extends \PHPUnit_Framework_TestCase
 {
+    use \Test\WithMockHelper;
+    
+    public function setUp()
+    {
+        parent::setUp();
+        $this->setupMocks([
+            Config::class,
+            Session::class,
+        ]);
+    }
+    
+    public function testSendWithoutParamsThrowsException()
+    {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('email and subject required');
+        $email = new Email($this->{Config::class}, $this->{Session::class});
+        $email->send('verify-code', []);
+    }
+    
     /**
      * @group email
      */

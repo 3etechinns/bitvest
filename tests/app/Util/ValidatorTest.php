@@ -20,5 +20,8 @@ class ValidatorTest extends \PHPUnit_Framework_TestCase
         
         $this->assertTrue($validator->isValidPasswordString('g00dp@ssw0rd!'));
         $this->assertFalse($validator->isValidPasswordString('bad pass'));
+        
+        $this->assertTrue($validator->isValidVerifyCodeString('deadbeef0123'));
+        $this->assertFalse($validator->isValidVerifyCodeString('livebeef0123'));
     }
 }

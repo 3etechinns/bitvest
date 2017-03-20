@@ -2,6 +2,9 @@
 
 namespace App\Model;
 
+/**
+ * @codeCoverageIgnore
+ */
 trait WithProperties
 {
     private $properties;

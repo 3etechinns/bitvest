@@ -5,6 +5,9 @@ namespace App\Util;
 use App\Util\Di;
 use App\Util\HeaderParams;
 
+/**
+ * @codeCoverageIgnore
+ */
 class Route
 {
     private $resources;

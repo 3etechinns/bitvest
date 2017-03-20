@@ -34,6 +34,11 @@ trait WithMockHelper
                     ->method($method);
                     
             if (!is_null($params)) {
+                
+                if (!is_array($params)) {
+                    throw new \Exception('Should pass expected params of mock method as an array');
+                }
+                
                 call_user_func_array([$m, 'with'], $params);
             }
             
